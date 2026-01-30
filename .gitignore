@@ -1,0 +1,18 @@
+# Güvenlik (En önemlisi bu!)
+.env
+
+# Python Gereksiz Dosyaları
+__pycache__/
+*.pyc
+
+# Sanal Ortam (Varsa)
+venv/
+env/
+.venv/
+
+# IDE Dosyaları (VS Code vs.)
+.vscode/
+.idea/
+
+# İşletim Sistemi Dosyaları
+.DS_Store
