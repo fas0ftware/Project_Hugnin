@@ -1,128 +1,120 @@
 """
-Hugnin | RSI Market Scanner (demo version)
-------------------------------------------
+Hugnin | RSI Market Scanner
+---------------------------
 FA Software - Developer: Anıl
-Version: 1.5 (shared Wilder RSI, colored output, demo limit)
+Version: 2.0 (100+ symbol watchlist, trend / 52-week / volume columns, filters, CSV export)
 """
 
+import argparse
+import os
 import sys
 import time
 from datetime import datetime
 
-import yfinance as yf
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 
-from rsi import OVERBOUGHT_LEVEL, OVERSOLD_LEVEL, RSI_PERIOD, latest_rsi
-
-# --- AYARLAR ---
-WATCHLIST = ["AAPL", "TSLA", "NVDA", "MSFT", "GOOGL", "AMZN", "META", "AMD", "COIN"]
-DEMO_LIMIT = 5  # Bot kaç tur çalışıp kapansın? (5 tur idealdir)
+import scanner
+import watchlist
 
 GREEN = "\033[92m"
 RED = "\033[91m"
+DIM = "\033[2m"
 RESET = "\033[0m"
 
-
-def print_header():
-    print(GREEN)
-    print(r"""
+BANNER = r"""
   _   _ _   _  ____ _   _ ___ _   _
  | | | | | | |/ ___| \ | |_ _| \ | |
  | |_| | | | | |  _|  \| || ||  \| |
  |  _  | |_| | |_| | |\  || || |\  |
  |_| |_|\___/ \____|_| \_|___|_| \_|
-     >>> RSI MARKET SCANNER v1.5 (DEMO) <<<
-    """)
-    print(RESET)
+        >>> RSI MARKET SCANNER v2.0 <<<
+"""
 
 
-def fetch_rsi(ticker):
-    """Returns (rsi, last_price) for a ticker, or (None, 0) when data is missing."""
+def parse_args(argv=None):
+    parser = argparse.ArgumentParser(description="Scan 100+ blue-chip stocks and crypto by RSI.")
+    parser.add_argument("-g", "--group", default=os.environ.get("HUGNIN_GROUP", "all"),
+                        help=f"all, us or one of: {', '.join(watchlist.group_names())} (default: all)")
+    parser.add_argument("-s", "--sort", default="rsi", choices=list(scanner.SORT_KEYS))
+    parser.add_argument("--desc", action="store_true", help="sort descending")
+    parser.add_argument("--signals-only", action="store_true", help="show only OVERSOLD / OVERBOUGHT")
+    parser.add_argument("--top", type=int, default=None, help="show only the first N rows")
+    parser.add_argument("--csv", metavar="FILE", help="also write the shown rows to a CSV file")
+    parser.add_argument("--watch", type=int, metavar="SECONDS", default=0,
+                        help="repeat the scan every N seconds (Ctrl+C to stop); default: scan once")
+    parser.add_argument("--list-groups", action="store_true", help="print the groups and exit")
+    args = parser.parse_args(argv)
     try:
-        # Period 1y: Garanti veri
-        df = yf.Ticker(ticker).history(period="1y", interval="1d")
-
-        if df.empty:
-            return None, 0
-
-        rsi = latest_rsi(df['Close'], RSI_PERIOD)
-        if rsi is None:
-            return None, 0
-
-        return rsi, df['Close'].iloc[-1]
-
-    except Exception:
-        return None, 0
+        watchlist.get_symbols(args.group)
+    except ValueError as error:
+        parser.error(str(error))
+    if args.top is not None and args.top < 1:
+        parser.error("--top must be at least 1")
+    if args.watch < 0:
+        parser.error("--watch must not be negative")
+    return args
 
 
-def analyze_market():
-    print("-" * 75)
-    print(f"🕒 TARAMA ZAMANI: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    print("-" * 75)
-    print(f"{'SEMBOL':<10} {'FİYAT ($)':<12} {'RSI':<10} {'DURUM / SİNYAL'}")
-    print("-" * 75)
+def color_for(signal):
+    return {"OVERSOLD": GREEN, "OVERBOUGHT": RED}.get(signal, "")
 
-    for symbol in WATCHLIST:
-        rsi, price = fetch_rsi(symbol)
 
-        if rsi is None:
-            continue
+def format_table(rows):
+    """Plain-text table (with ANSI colors for the two signal states)."""
+    header = f"{'SYMBOL':<10}{'PRICE':>12}{'CHG %':>8}{'RSI':>7}  {'SIGNAL':<11}{'TREND':<14}{'vs 52W HIGH':>12}{'VOL x':>7}"
+    lines = [header, "-" * len(header)]
+    for r in rows:
+        volume = "-" if r["volume_ratio"] is None else f"{r['volume_ratio']:.2f}"
+        line = (f"{r['symbol']:<10}{r['price']:>12.2f}{r['change_pct']:>+8.2f}{r['rsi']:>7.1f}  "
+                f"{r['signal']:<11}{r['trend']:<14}{r['from_52w_high_pct']:>11.1f}%{volume:>7}")
+        color = color_for(r["signal"])
+        lines.append(f"{color}{line}{RESET}" if color else line)
+    return "\n".join(lines)
 
-        signal = "Nötr"
-        icon = "⚪"
-        color = ""
 
-        if rsi < OVERSOLD_LEVEL:
-            signal = "AŞIRI SATIM"
-            icon = "🟢"
-            color = GREEN
-        elif rsi > OVERBOUGHT_LEVEL:
-            signal = "AŞIRI ALIM"
-            icon = "🔴"
-            color = RED
-        elif OVERSOLD_LEVEL <= rsi < 45:
-            signal = "Düşük Bölge"
-            icon = "📉"
-        elif 55 < rsi <= OVERBOUGHT_LEVEL:
-            signal = "Yüksek Bölge"
-            icon = "📈"
+def run_once(args):
+    symbols = watchlist.get_symbols(args.group)
+    print(f"{DIM}Scanning {len(symbols)} symbols ({args.group}) at "
+          f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} ...{RESET}")
+    rows, missing = scanner.scan(symbols)
+    shown = scanner.select(rows, args.sort, args.desc, args.signals_only, args.top)
 
-        print(f"{color}{symbol:<10} {price:<12.2f} {rsi:<10.1f} {icon} {signal}{RESET}")
-        time.sleep(0.2)
+    print(format_table(shown) if shown else "No symbols match.")
+    counts = scanner.summary(rows)
+    print(f"\nScanned {len(rows)}/{len(symbols)}  |  "
+          f"{GREEN}oversold {counts['OVERSOLD']}{RESET}  {RED}overbought {counts['OVERBOUGHT']}{RESET}  "
+          f"neutral zone {counts['NEUTRAL'] + counts['LOW'] + counts['HIGH']}")
+    if missing:
+        print(f"{DIM}No data for {len(missing)}: {', '.join(missing[:10])}{'...' if len(missing) > 10 else ''}{RESET}")
+    if args.csv:
+        scanner.write_csv(shown, args.csv)
+        print(f"CSV written: {args.csv}")
+    print("Not investment advice. FA Software | Developer: Anıl")
+    return len(rows)
 
-    print("-" * 75)
-    print("\n")
+
+def main(argv=None):
+    args = parse_args(argv)
+    if args.list_groups:
+        for name in ["all", "us"] + watchlist.group_names():
+            print(f"{name:<22}{len(watchlist.get_symbols(name))} symbols")
+        return 0
+    print(GREEN + BANNER + RESET)
+    try:
+        while True:
+            scanned = run_once(args)
+            if not args.watch:
+                return 0 if scanned else 1
+            print(f"\nNext scan in {args.watch}s (Ctrl+C to stop)\n")
+            time.sleep(args.watch)
+    except KeyboardInterrupt:
+        print("\nHugnin stopped.")
+        return 0
 
 
 if __name__ == "__main__":
-    try:
-        print_header()
-        print(f"Sistem başlatılıyor... (Demo Modu: {DEMO_LIMIT} Tarama ile sınırlıdır)")
-        time.sleep(2)
-
-        loop_count = 0
-
-        while loop_count < DEMO_LIMIT:
-            loop_count += 1
-            print(f"🔄 Döngü: {loop_count}/{DEMO_LIMIT}")
-
-            analyze_market()
-
-            # Son turdaysa beklemeye gerek yok, direkt bitir
-            if loop_count == DEMO_LIMIT:
-                break
-
-            for i in range(10, 0, -1):  # Demo olduğu için bekleme süresi 10 sn
-                sys.stdout.write(f"\r⏳ Sıradaki tarama: {i} sn...   ")
-                sys.stdout.flush()
-                time.sleep(1)
-            sys.stdout.write("\r" + " " * 40 + "\r")
-
-        # --- KAPANIŞ MESAJI ---
-        print("\n" + "=" * 50)
-        print("✅ DEMO SÜRECİ BAŞARIYLA TAMAMLANDI.")
-        print("💡 Bu sadece bir önizlemedir (Preview).")
-        print("🦅 FA Software | Developer: Anıl")
-        print("=" * 50 + "\n")
-
-    except KeyboardInterrupt:
-        print("\n\n🦅 Hugnin kullanıcı tarafından kapatıldı.")
+    sys.exit(main())

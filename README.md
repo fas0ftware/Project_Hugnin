@@ -21,30 +21,33 @@ Telegram bot report:
 
 ## ◼ Features
 
-- **Live market data:** Fetches data through the Yahoo Finance library (`yfinance`).
-- **RSI analysis:** Calculates the 14-day RSI (Wilder's smoothing) from daily prices. The same method is used in Project_Heimdall, so both projects report the same values.
-- **Color-coded terminal output:**
-  - RSI below 30: oversold (green)
-  - RSI above 70: overbought (red)
-  - Everything else is printed in the default color
-- **Telegram bot:** Scans a watchlist of crypto, US stocks and Borsa Istanbul stocks and reports only the assets outside the 30 to 70 RSI range.
-- **Error handling:** Skips symbols with missing or too little data (for example around market holidays).
-- **Demo behavior:** The terminal scanner stops automatically after 5 scans.
+- **109 symbols out of the box** in 8 groups (`watchlist.py`): US tech, finance, health, consumer, industrial and energy/utilities blue chips (85), 25 Borsa Istanbul stocks and 5 major cryptos. Pick one with `--group`.
+- **One batched download** for the whole list (not one request per symbol), so a full scan takes seconds.
+- **Per-symbol metrics:** price, 1-day change, 14-day RSI (Wilder's smoothing, same as Project_Heimdall), signal, trend (price vs 50-day average and 50/200-day cross), distance from the 52-week high and today's volume vs the 20-day average.
+- **Filters and sorting:** `--signals-only`, `--sort rsi|change|high|symbol`, `--desc`, `--top N`.
+- **CSV export:** `--csv result.csv`.
+- **Watch mode:** `--watch 300` repeats the scan every 5 minutes.
+- **Color-coded terminal output:** oversold (RSI < 30) in green, overbought (RSI > 70) in red.
+- **Telegram bot:** scans the same watchlist (group chosen with `HUGNIN_GROUP`) and reports only the assets outside the 30 to 70 RSI range, with price, change and trend.
+- **Error handling:** symbols with missing or too little data are skipped and listed at the end, so one delisted ticker never stops a scan.
 
 ## ◼ Project structure
 
 ```
 Project_Hugnin/
-├── main.py                # Terminal scanner (demo)
+├── main.py                # Terminal scanner (CLI)
 ├── hugnin_bot.py          # Telegram bot
+├── scanner.py             # Batch download, metrics, signals, sorting, CSV
+├── watchlist.py           # The 109 symbols in groups
 ├── rsi.py                 # Shared RSI calculation
 ├── tests/
-│   └── test_rsi.py
+│   ├── test_rsi.py
+│   └── test_scanner.py
 ├── docs/
 │   └── telegram_preview.jpeg
 ├── requirements.txt       # Terminal scanner dependencies
 ├── requirements-bot.txt   # Scanner + Telegram bot dependencies
-└── .env.example           # Template for the bot token
+└── .env.example           # Template for the bot token and default group
 ```
 
 ## ◼ Requirements
@@ -94,7 +97,12 @@ pip install -r requirements-bot.txt
 **Terminal scanner**
 
 ```bash
-python main.py
+python main.py                              # scan all 109 symbols once, sorted by RSI
+python main.py --group bist --top 10        # ten lowest-RSI Borsa Istanbul stocks
+python main.py --signals-only --desc        # only oversold / overbought, highest RSI first
+python main.py --group us-tech --csv tech.csv
+python main.py --watch 300                  # rescan every 5 minutes
+python main.py --list-groups
 ```
 
 **Telegram bot**
@@ -108,19 +116,23 @@ python hugnin_bot.py
 
 3. Send `/start`, `/scan` or `/analiz` to the bot in Telegram. All three run the same scan.
 
-The bot's watchlist is the `WATCHLIST` list at the top of `hugnin_bot.py`; edit it to track other symbols (use Yahoo Finance symbols, such as `BTC-USD` or `THYAO.IS`).
+To track other assets, edit the groups in `watchlist.py` (Yahoo Finance symbols, such as `BTC-USD` or `THYAO.IS`).
 
 **Tests**
 
 ```bash
 python tests/test_rsi.py
+python tests/test_scanner.py
 ```
+
+The scanner tests use generated price series and a fake downloader, so they need no internet.
 
 ## ◼ Notes and limitations
 
 - `yfinance` is an unofficial client for Yahoo Finance. Data can be delayed, incomplete or unavailable at times.
 - RSI is a single indicator. An oversold or overbought reading is not a buy or sell signal on its own. The bot's "AL" and "SAT" labels only describe the RSI zone.
 - The bot scans only when you message it; it does not send scheduled alerts.
+- The list holds established, liquid companies, but tickers change (mergers, delistings, renamed Borsa Istanbul codes). Symbols Yahoo has no data for are skipped and reported. The live download has not been verified in the automated checks (no network there); the scan logic is covered by tests.
 
 ## ◼ Disclaimer
 

@@ -17,3 +17,4 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - run: pip install pandas
       - run: python tests/test_rsi.py
+      - run: python tests/test_scanner.py

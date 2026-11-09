@@ -1,12 +1,12 @@
 import os
 import logging
-import yfinance as yf
 import asyncio
 from telegram import Update, constants
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler
 from dotenv import load_dotenv
 
-from rsi import OVERBOUGHT_LEVEL, OVERSOLD_LEVEL, RSI_PERIOD, latest_rsi
+import scanner
+import watchlist
 
 # --- AYARLAR ---
 load_dotenv()
@@ -15,12 +15,8 @@ TOKEN = os.getenv("TELEGRAM_TOKEN")
 if not TOKEN:
     raise ValueError("HATA: .env dosyasında TELEGRAM_TOKEN bulunamadı!")
 
-# Tarama Listesi (İstediğini ekle/çıkar)
-WATCHLIST = [
-    "BTC-USD", "ETH-USD", "SOL-USD", "XRP-USD",
-    "AAPL", "TSLA", "NVDA", "AMZN", "GOOGL",
-    "THYAO.IS", "ASELS.IS", "GARAN.IS", "EREGL.IS"
-]
+# Tarama listesi watchlist.py içinde (gruplar). Bot grubu .env'deki HUGNIN_GROUP ile seçilir (varsayılan: all).
+GROUP = os.getenv("HUGNIN_GROUP", "all")
 
 # Loglama
 logging.basicConfig(
@@ -29,38 +25,21 @@ logging.basicConfig(
 )
 
 # --- ANALİZ MOTORU ---
+def format_signal(row):
+    if row["signal"] == "OVERSOLD":
+        title = "🟢 **AL (Oversold)**"
+    else:
+        title = "🔴 **SAT (Overbought)**"
+    return (f"{title} | {row['symbol']}\n"
+            f"   └ Fiyat: {row['price']:.2f} ({row['change_pct']:+.2f}%) | RSI: {row['rsi']:.1f} | Trend: {row['trend']}")
+
+
 def analyze_market():
-    """Piyasayı tarar ve AL/SAT sinyallerini metin olarak döndürür."""
-    signals = []
-    
-    for symbol in WATCHLIST:
-        try:
-            # Sadece son 3 aylık veriyi çek (Hız için yeterli)
-            ticker = yf.Ticker(symbol)
-            data = ticker.history(period="3mo")
-            
-            if data.empty:
-                continue
+    """Piyasayı tek toplu istekle tarar ve AL/SAT sinyallerini metin olarak döndürür."""
+    rows, _missing = scanner.scan(watchlist.get_symbols(GROUP))
+    flagged = scanner.select(rows, sort="rsi", signals_only=True)
+    return [format_signal(row) for row in flagged]
 
-            # RSI Hesaplama (ortak modül: rsi.py, Wilder yöntemi)
-            current_rsi = latest_rsi(data['Close'], RSI_PERIOD)
-            if current_rsi is None:
-                continue
-
-            current_price = data['Close'].iloc[-1]
-
-            # --- KARAR MEKANİZMASI ---
-            # RSI 30'un altındaysa AL, 70'in üstündeyse SAT
-            if current_rsi < OVERSOLD_LEVEL:
-                signals.append(f"🟢 **AL (Oversold)** | {symbol}\n   └ Fiyat: {current_price:.2f} | RSI: {current_rsi:.1f}")
-            elif current_rsi > OVERBOUGHT_LEVEL:
-                signals.append(f"🔴 **SAT (Overbought)** | {symbol}\n   └ Fiyat: {current_price:.2f} | RSI: {current_rsi:.1f}")
-                
-        except Exception as e:
-            print(f"Hata ({symbol}): {e}")
-            continue
-
-    return signals
 
 # --- BOT KOMUTLARI ---
 

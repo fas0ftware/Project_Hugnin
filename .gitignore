@@ -16,3 +16,9 @@ env/
 
 # İşletim Sistemi Dosyaları
 .DS_Store
+# Hugnin outputs
+*.csv
+.env.*
+!.env.example
+__pycache__/
+*.pyc
