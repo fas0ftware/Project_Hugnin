@@ -1,11 +1,12 @@
 import os
 import logging
 import yfinance as yf
-import pandas as pd
 import asyncio
 from telegram import Update, constants
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler
 from dotenv import load_dotenv
+
+from rsi import OVERBOUGHT_LEVEL, OVERSOLD_LEVEL, RSI_PERIOD, latest_rsi
 
 # --- AYARLAR ---
 load_dotenv()
@@ -41,21 +42,18 @@ def analyze_market():
             if data.empty:
                 continue
 
-            # RSI Hesaplama (Manuel Formül)
-            delta = data['Close'].diff()
-            gain = (delta.where(delta > 0, 0)).rolling(window=14).mean()
-            loss = (-delta.where(delta < 0, 0)).rolling(window=14).mean()
-            rs = gain / loss
-            rsi = 100 - (100 / (1 + rs))
-            
-            current_rsi = rsi.iloc[-1]
+            # RSI Hesaplama (ortak modül: rsi.py, Wilder yöntemi)
+            current_rsi = latest_rsi(data['Close'], RSI_PERIOD)
+            if current_rsi is None:
+                continue
+
             current_price = data['Close'].iloc[-1]
-            
+
             # --- KARAR MEKANİZMASI ---
             # RSI 30'un altındaysa AL, 70'in üstündeyse SAT
-            if current_rsi < 30:
+            if current_rsi < OVERSOLD_LEVEL:
                 signals.append(f"🟢 **AL (Oversold)** | {symbol}\n   └ Fiyat: {current_price:.2f} | RSI: {current_rsi:.1f}")
-            elif current_rsi > 70:
+            elif current_rsi > OVERBOUGHT_LEVEL:
                 signals.append(f"🔴 **SAT (Overbought)** | {symbol}\n   └ Fiyat: {current_price:.2f} | RSI: {current_rsi:.1f}")
                 
         except Exception as e:
