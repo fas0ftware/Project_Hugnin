@@ -2,137 +2,127 @@
 
 > *"Data is merely noise until logic gives it a voice."*
 
-A terminal scanner and Telegram bot that check major assets and flag overbought and oversold conditions using the 14-day Relative Strength Index (RSI).
+[![CI](https://github.com/fas0ftware/Project_Hugnin/actions/workflows/ci.yml/badge.svg)](https://github.com/fas0ftware/Project_Hugnin/actions/workflows/ci.yml)
+![Version](https://img.shields.io/badge/version-3.0.0-blue)
+![Python](https://img.shields.io/badge/python-3.10%2B-yellow)
+![License](https://img.shields.io/badge/license-MIT-green)
 
-## ◼ Overview
+A terminal scanner and a private Telegram bot that check **109 stocks and cryptos** (or any symbols you give it) in one batched request and flag **oversold** and **overbought** conditions with the Relative Strength Index.
 
-**Hugnin** analyzes market data and applies a technical indicator, RSI, to spot assets that may be overbought or oversold. It comes in two forms that share the same RSI code (`rsi.py`):
+For an interactive dashboard with charts, see the companion project [Project_Heimdall](https://github.com/fas0ftware/Project_Heimdall).
 
-- **Terminal scanner** (`main.py`): a quick, color-coded check from the command line. This is the public demo version.
-- **Telegram bot** (`hugnin_bot.py`): sends a signal report to your chat on `/start` or `/scan`.
-
-For a visual, interactive version with charts, see the companion project [Project_Heimdall](https://github.com/fas0ftware/Project_Heimdall).
-
-## ◼ Preview
-
-Telegram bot report:
-
-<img src="docs/telegram_preview.jpeg" alt="Hugnin Telegram bot signal report" width="320">
+![Live scan of all 109 symbols, signals only](docs/scan-signals.svg)
 
 ## ◼ Features
 
-- **109 symbols out of the box** in 8 groups (`watchlist.py`): US tech, finance, health, consumer, industrial and energy/utilities blue chips (85), 25 Borsa Istanbul stocks and 5 major cryptos. Pick one with `--group`.
-- **One batched download** for the whole list (not one request per symbol), so a full scan takes seconds.
-- **Per-symbol metrics:** price, 1-day change, 14-day RSI (Wilder's smoothing, same as Project_Heimdall), signal, trend (price vs 50-day average and 50/200-day cross), distance from the 52-week high and today's volume vs the 20-day average.
+**Scanner (`main.py`)**
+- **109 symbols out of the box** in 8 groups (`watchlist.py`): US tech, finance, health, consumer, industrial, energy/utilities, 25 Borsa Istanbul stocks and 5 cryptos – or **your own list** with `--symbols AAPL,THYAO.IS,BTC-USD`.
+- **One batched download** for the whole list, so a full scan takes seconds.
+- **Per symbol:** price, 1-day change, RSI (Wilder), signal, trend (price vs SMA 50 and the 50/200 cross), distance from the 52-week high, today's volume vs the 20-day average.
+- **Tunable RSI:** `--rsi-period`, `--oversold`, `--overbought`.
 - **Filters and sorting:** `--signals-only`, `--sort rsi|change|high|symbol`, `--desc`, `--top N`.
-- **CSV export:** `--csv result.csv`.
-- **Watch mode:** `--watch 300` repeats the scan every 5 minutes.
-- **Color-coded terminal output:** oversold (RSI < 30) in green, overbought (RSI > 70) in red.
-- **Telegram bot:** scans the same watchlist (group chosen with `HUGNIN_GROUP`) and reports only the assets outside the 30 to 70 RSI range, with price, change and trend.
-- **Error handling:** symbols with missing or too little data are skipped and listed at the end, so one delisted ticker never stops a scan.
+- **Export:** `--csv file.csv`, `--json file.json`.
+- **Watch mode:** `--watch 300` rescans every 5 minutes and highlights **only new signals** since the previous scan.
+- Color output (automatically plain when piped, or with `--no-color` / `NO_COLOR`); missing symbols are skipped and listed.
 
-## ◼ Project structure
+**Telegram bot (`hugnin_bot.py`)**
+- `/scan [group]`, `/groups`, `/subscribe [minutes]`, `/unsubscribe`, `/help` (`/analiz` still works as an alias).
+- **Scheduled alerts** that fire only when a *new* signal appears, so you are not spammed with the same symbols.
+- **Private by default:** only chat IDs in `ALLOWED_CHAT_IDS` are served; everyone else is refused and logged.
+- **Abuse protection:** 60-second cooldown per chat for manual scans; alert interval clamped to 15 min – 24 h.
+- **Safe output:** HTML-escaped messages, automatically split under Telegram's 4096-character limit.
+- The bot token is never written to logs (the HTTP client's request logging is silenced).
+
+Example alert:
 
 ```
-Project_Hugnin/
-├── main.py                # Terminal scanner (CLI)
-├── hugnin_bot.py          # Telegram bot
-├── scanner.py             # Batch download, metrics, signals, sorting, CSV
-├── watchlist.py           # The 109 symbols in groups
-├── rsi.py                 # Shared RSI calculation
-├── tests/
-│   ├── test_rsi.py
-│   └── test_scanner.py
-├── docs/
-│   └── telegram_preview.jpeg
-├── requirements.txt       # Terminal scanner dependencies
-├── requirements-bot.txt   # Scanner + Telegram bot dependencies
-└── .env.example           # Template for the bot token and default group
+🚨 New Hugnin signals
+Group all · scanned 109/109
+
+🟢 OVERSOLD | XRP-USD
+   └ Price 1.06 (+0.83%) · RSI 25.6 · Trend DOWN/long-UP
+
+🔴 OVERBOUGHT | GARAN.IS
+   └ Price 154.80 (-0.39%) · RSI 75.3 · Trend UP/long-DOWN
+
+Not investment advice – algorithm output.
 ```
-
-## ◼ Requirements
-
-- Python 3.9 or newer
-- pip
-- An internet connection (market data is fetched online)
-- For the bot: a Telegram bot token from [@BotFather](https://t.me/BotFather)
 
 ## ◼ Installation
 
 ```bash
 git clone https://github.com/fas0ftware/Project_Hugnin.git
 cd Project_Hugnin
-```
-
-Create and activate a virtual environment.
-
-Linux / macOS:
-
-```bash
-python3 -m venv venv
-source venv/bin/activate
-```
-
-Windows:
-
-```bash
-python -m venv venv
-venv\Scripts\activate
-```
-
-Install dependencies for the terminal scanner:
-
-```bash
-pip install -r requirements.txt
-```
-
-Or, to also run the Telegram bot:
-
-```bash
-pip install -r requirements-bot.txt
+python3 -m venv venv && source venv/bin/activate   # Windows: venv\Scripts\activate
+pip install -r requirements.txt                    # scanner only
+pip install -r requirements-bot.txt                # scanner + Telegram bot
 ```
 
 ## ◼ Usage
 
-**Terminal scanner**
-
 ```bash
-python main.py                              # scan all 109 symbols once, sorted by RSI
-python main.py --group bist --top 10        # ten lowest-RSI Borsa Istanbul stocks
-python main.py --signals-only --desc        # only oversold / overbought, highest RSI first
-python main.py --group us-tech --csv tech.csv
-python main.py --watch 300                  # rescan every 5 minutes
+python main.py                                     # all 109 symbols once, sorted by RSI
+python main.py --group bist --top 10               # ten lowest-RSI Borsa Istanbul stocks
+python main.py --symbols "AAPL, NVDA, BTC-USD"     # your own list
+python main.py --signals-only --oversold 35 --overbought 65
+python main.py --group us-tech --csv tech.csv --json tech.json
+python main.py --watch 300                         # rescan every 5 minutes, flag new signals
 python main.py --list-groups
 ```
 
-**Telegram bot**
+![Live scan of the us-tech group](docs/scan-us-tech.svg)
 
-1. Copy `.env.example` to `.env` and put your own token in it. The `.env` file is ignored by git, so the token stays private.
-2. Start the bot:
+### Telegram bot
 
-```bash
-python hugnin_bot.py
-```
+1. Create a bot with [@BotFather](https://t.me/BotFather) and copy `.env.example` to `.env`.
+2. Put the token in `TELEGRAM_TOKEN`, start the bot with `python hugnin_bot.py` and send it `/start`.
+3. The bot refuses you and logs your chat id – add it to `ALLOWED_CHAT_IDS` and restart.
+4. `/scan bist` for a report, `/subscribe 60` for hourly alerts on new signals.
 
-3. Send `/start`, `/scan` or `/analiz` to the bot in Telegram. All three run the same scan.
+## ◼ Tests
 
-To track other assets, edit the groups in `watchlist.py` (Yahoo Finance symbols, such as `BTC-USD` or `THYAO.IS`).
-
-**Tests**
+37 tests with generated price series and a fake downloader (no network): RSI edge cases, metrics, signals with custom levels, symbol validation, CSV/JSON export, new-signal detection, the CLI end to end (including watch mode), and the bot's report formatting, HTML escaping, message chunking, cooldown, access list and handler wiring.
 
 ```bash
-python tests/test_rsi.py
-python tests/test_scanner.py
+pip install -r requirements-dev.txt
+python -m pytest -v
 ```
 
-The scanner tests use generated price series and a fake downloader, so they need no internet.
+![Test results](docs/test-results.svg)
+
+## ◼ Security
+
+CI runs [bandit](https://github.com/PyCQA/bandit) and [pip-audit](https://github.com/pypa/pip-audit) on every push. Latest local scan, including a secret scan of the full git history:
+
+![Security scan](docs/security-scan.svg)
+
+## ◼ Project structure
+
+```
+Project_Hugnin/
+├── main.py              # Terminal scanner (CLI)
+├── hugnin_bot.py        # Telegram bot
+├── scanner.py           # Batch download, metrics, signals, sorting, CSV/JSON, new-signal diff
+├── watchlist.py         # The 109 symbols in groups
+├── rsi.py               # Shared RSI calculation
+├── tests/               # test_rsi.py, test_scanner.py, test_bot.py
+├── requirements.txt     # Scanner
+├── requirements-bot.txt # Scanner + bot
+└── .env.example         # Token, allowed chats, default group
+```
 
 ## ◼ Notes and limitations
 
-- `yfinance` is an unofficial client for Yahoo Finance. Data can be delayed, incomplete or unavailable at times.
-- RSI is a single indicator. An oversold or overbought reading is not a buy or sell signal on its own. The bot's "AL" and "SAT" labels only describe the RSI zone.
-- The bot scans only when you message it; it does not send scheduled alerts.
-- The list holds established, liquid companies, but tickers change (mergers, delistings, renamed Borsa Istanbul codes). Symbols Yahoo has no data for are skipped and reported. The live download has not been verified in the automated checks (no network there); the scan logic is covered by tests.
+- `yfinance` is an unofficial Yahoo Finance client; data can be delayed, incomplete or unavailable.
+- RSI alone is not a buy or sell signal.
+- Tickers change (mergers, delistings, renamed Borsa Istanbul codes – e.g. KOZAL.IS became TRALT.IS). Symbols without data are skipped and reported.
+- Bot alert subscriptions live in memory and are cleared when the bot restarts.
+
+## ◼ Changelog
+
+- **3.0.0** – Custom symbol lists, tunable RSI period/levels, JSON export, new-signal highlighting in watch mode, `--no-color`; bot rewritten in English with access control, cooldown, scheduled new-signal alerts, HTML escaping, message chunking and token-safe logging; KOZAL.IS → TRALT.IS; pytest suite; CI security scans.
+- **2.0.0** – 109-symbol watchlist, batched scan engine, trend / 52-week / volume columns, filters, CSV, watch mode.
+- **1.0.0** – RSI scan of a short list, Telegram report.
 
 ## ◼ Disclaimer
 
@@ -140,4 +130,4 @@ This software is for educational and informational purposes only. It does not co
 
 ---
 
-Part of the **FA Software** projects.
+Part of the **FA Software** projects. Licensed under the [MIT License](LICENSE).

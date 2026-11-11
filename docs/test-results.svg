@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="745" height="892" viewBox="0 0 745 892">
+<rect width="100%" height="100%" rx="10" fill="#0d1117" stroke="#30363d"/>
+<rect width="100%" height="32" rx="10" fill="#161b22"/><rect y="22" width="100%" height="10" fill="#161b22"/>
+<circle cx="18" cy="16" r="6" fill="#ff5f56"/><circle cx="38" cy="16" r="6" fill="#ffbd2e"/><circle cx="58" cy="16" r="6" fill="#27c93f"/>
+<text x="372" y="21" fill="#8b949e" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12" text-anchor="middle">Project_Hugnin — pytest</text>
+<g font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="13" xml:space="preserve">
+<text x="14" y="56" fill="#58a6ff">$ python -m pytest -v</text>
+<text x="14" y="74" fill="#e6edf3">============================= test session starts ==============================</text>
+<text x="14" y="92" fill="#e6edf3">platform linux -- Python 3.14.4, pytest-9.2.0, pluggy-1.7.0 -- python</text>
+<text x="14" y="110" fill="#e6edf3">rootdir: .</text>
+<text x="14" y="128" fill="#e6edf3">plugins: anyio-4.16.0, platformdirs-4.14.5</text>
+<text x="14" y="146" fill="#e6edf3">collecting ... collected 37 items</text>
+<text x="14" y="164" fill="#e6edf3"></text>
+<text x="14" y="182" fill="#3fb950">tests/test_bot.py::test_parse_allowed PASSED                             [  2%]</text>
+<text x="14" y="200" fill="#3fb950">tests/test_bot.py::test_report_escapes_html_and_lists_only_signals PASSED [  5%]</text>
+<text x="14" y="218" fill="#3fb950">tests/test_bot.py::test_report_when_calm PASSED                          [  8%]</text>
+<text x="14" y="236" fill="#3fb950">tests/test_bot.py::test_chunk_message_respects_limit_and_keeps_blocks PASSED [ 10%]</text>
+<text x="14" y="254" fill="#3fb950">tests/test_bot.py::test_cooldown PASSED                                  [ 13%]</text>
+<text x="14" y="272" fill="#3fb950">tests/test_bot.py::test_resolve_group PASSED                             [ 16%]</text>
+<text x="14" y="290" fill="#3fb950">tests/test_bot.py::test_help_text_lists_commands PASSED                  [ 18%]</text>
+<text x="14" y="308" fill="#3fb950">tests/test_bot.py::test_app_builds_with_handlers PASSED                  [ 21%]</text>
+<text x="14" y="326" fill="#3fb950">tests/test_rsi.py::test_all_gains_is_100 PASSED                          [ 24%]</text>
+<text x="14" y="344" fill="#3fb950">tests/test_rsi.py::test_all_losses_is_0 PASSED                           [ 27%]</text>
+<text x="14" y="362" fill="#3fb950">tests/test_rsi.py::test_too_little_data_returns_none PASSED              [ 29%]</text>
+<text x="14" y="380" fill="#3fb950">tests/test_rsi.py::test_warmup_is_nan PASSED                             [ 32%]</text>
+<text x="14" y="398" fill="#3fb950">tests/test_rsi.py::test_stays_in_range PASSED                            [ 35%]</text>
+<text x="14" y="416" fill="#3fb950">tests/test_scanner.py::test_watchlist_has_at_least_100_unique_symbols PASSED [ 37%]</text>
+<text x="14" y="434" fill="#3fb950">tests/test_scanner.py::test_watchlist_groups_and_errors PASSED           [ 40%]</text>
+<text x="14" y="452" fill="#3fb950">tests/test_scanner.py::test_classify_levels PASSED                       [ 43%]</text>
+<text x="14" y="470" fill="#3fb950">tests/test_scanner.py::test_rising_series_is_overbought_uptrend_at_high PASSED [ 45%]</text>
+<text x="14" y="488" fill="#3fb950">tests/test_scanner.py::test_falling_series_is_oversold_downtrend PASSED  [ 48%]</text>
+<text x="14" y="506" fill="#3fb950">tests/test_scanner.py::test_too_little_data_returns_none PASSED          [ 51%]</text>
+<text x="14" y="524" fill="#3fb950">tests/test_scanner.py::test_short_history_has_no_trend PASSED            [ 54%]</text>
+<text x="14" y="542" fill="#3fb950">tests/test_scanner.py::test_analyze_frame_skips_missing_and_empty_symbols PASSED [ 56%]</text>
+<text x="14" y="560" fill="#3fb950">tests/test_scanner.py::test_analyze_frame_single_symbol_download PASSED  [ 59%]</text>
+<text x="14" y="578" fill="#3fb950">tests/test_scanner.py::test_scan_reports_missing_symbols PASSED          [ 62%]</text>
+<text x="14" y="596" fill="#3fb950">tests/test_scanner.py::test_scan_handles_empty_download PASSED           [ 64%]</text>
+<text x="14" y="614" fill="#3fb950">tests/test_scanner.py::test_select_sort_filter_top PASSED                [ 67%]</text>
+<text x="14" y="632" fill="#3fb950">tests/test_scanner.py::test_summary_counts PASSED                        [ 70%]</text>
+<text x="14" y="650" fill="#3fb950">tests/test_scanner.py::test_csv_roundtrip PASSED                         [ 72%]</text>
+<text x="14" y="668" fill="#3fb950">tests/test_scanner.py::test_cli_parse_args PASSED                        [ 75%]</text>
+<text x="14" y="686" fill="#3fb950">tests/test_scanner.py::test_cli_table_contains_every_row PASSED          [ 78%]</text>
+<text x="14" y="704" fill="#3fb950">tests/test_scanner.py::test_parse_symbols PASSED                         [ 81%]</text>
+<text x="14" y="722" fill="#3fb950">tests/test_scanner.py::test_custom_levels_change_the_signal PASSED       [ 83%]</text>
+<text x="14" y="740" fill="#3fb950">tests/test_scanner.py::test_rsi_period_is_passed_through PASSED          [ 86%]</text>
+<text x="14" y="758" fill="#3fb950">tests/test_scanner.py::test_new_signals_only_reports_changes PASSED      [ 89%]</text>
+<text x="14" y="776" fill="#3fb950">tests/test_scanner.py::test_json_export PASSED                           [ 91%]</text>
+<text x="14" y="794" fill="#3fb950">tests/test_scanner.py::test_cli_end_to_end_with_fake_data PASSED         [ 94%]</text>
+<text x="14" y="812" fill="#3fb950">tests/test_scanner.py::test_cli_validates_settings PASSED                [ 97%]</text>
+<text x="14" y="830" fill="#3fb950">tests/test_scanner.py::test_watch_mode_prints_new_signals_once PASSED    [100%]</text>
+<text x="14" y="848" fill="#e6edf3"></text>
+<text x="14" y="866" fill="#3fb950">============================== 37 passed in 0.57s ==============================</text>
+</g></svg>

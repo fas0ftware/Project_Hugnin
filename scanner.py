@@ -1,6 +1,8 @@
 """Hugnin scan engine: batch download, per-symbol metrics, signals, sorting and CSV export."""
 
 import csv
+import json
+import re
 
 import pandas as pd
 
@@ -10,11 +12,30 @@ MIN_BARS = RSI_PERIOD + 1
 FIELDS = ["symbol", "price", "change_pct", "rsi", "signal", "trend", "from_52w_high_pct", "volume_ratio"]
 
 
-def classify(rsi):
+SIGNALS = ("OVERSOLD", "OVERBOUGHT")
+_SYMBOL_RE = re.compile(r"^\^?[A-Z0-9][A-Z0-9.\-]{0,14}(=X|=F)?$")
+
+
+def parse_symbols(text):
+    """'aapl, msft btc-usd' -> ['AAPL', 'MSFT', 'BTC-USD']; raises ValueError on junk."""
+    out = []
+    for raw in re.split(r"[\s,;]+", text or ""):
+        if not raw:
+            continue
+        sym = raw.strip().upper()
+        if not _SYMBOL_RE.match(sym):
+            raise ValueError(f"'{raw}' is not a valid Yahoo Finance symbol")
+        out.append(sym)
+    if not out:
+        raise ValueError("no symbols given")
+    return list(dict.fromkeys(out))
+
+
+def classify(rsi, oversold=OVERSOLD_LEVEL, overbought=OVERBOUGHT_LEVEL):
     """Signal label for an RSI value."""
-    if rsi < OVERSOLD_LEVEL:
+    if rsi < oversold:
         return "OVERSOLD"
-    if rsi > OVERBOUGHT_LEVEL:
+    if rsi > overbought:
         return "OVERBOUGHT"
     if rsi < 45:
         return "LOW"
@@ -35,12 +56,13 @@ def trend_label(close):
     return label
 
 
-def analyze_symbol(symbol, close, volume=None):
+def analyze_symbol(symbol, close, volume=None, rsi_period=RSI_PERIOD,
+                   oversold=OVERSOLD_LEVEL, overbought=OVERBOUGHT_LEVEL):
     """Metrics for one symbol from its daily closes (and optional volumes). None if too little data."""
     close = close.dropna()
-    if len(close) < MIN_BARS:
+    if len(close) < max(MIN_BARS, rsi_period + 1):
         return None
-    rsi = latest_rsi(close, RSI_PERIOD)
+    rsi = latest_rsi(close, rsi_period)
     if rsi is None:
         return None
     price = float(close.iloc[-1])
@@ -56,14 +78,14 @@ def analyze_symbol(symbol, close, volume=None):
         "price": round(price, 4),
         "change_pct": round((price / previous - 1) * 100, 2) if previous else 0.0,
         "rsi": round(rsi, 1),
-        "signal": classify(rsi),
+        "signal": classify(rsi, oversold, overbought),
         "trend": trend_label(close),
         "from_52w_high_pct": round((price / high - 1) * 100, 1) if high else 0.0,
         "volume_ratio": volume_ratio,
     }
 
 
-def analyze_frame(frame, symbols):
+def analyze_frame(frame, symbols, **settings):
     """Rows for every symbol present in a yfinance multi-ticker frame (group_by='ticker')."""
     rows = []
     for symbol in symbols:
@@ -78,7 +100,7 @@ def analyze_frame(frame, symbols):
             volume = part["Volume"] if "Volume" in part else None
         except KeyError:
             continue
-        row = analyze_symbol(symbol, close, volume)
+        row = analyze_symbol(symbol, close, volume, **settings)
         if row:
             rows.append(row)
     return rows
@@ -94,10 +116,10 @@ def download(symbols, period="1y"):
     )
 
 
-def scan(symbols, period="1y", downloader=download):
-    """Returns (rows, missing_symbols)."""
+def scan(symbols, period="1y", downloader=download, **settings):
+    """Returns (rows, missing_symbols). `settings` may set rsi_period/oversold/overbought."""
     frame = downloader(symbols, period)
-    rows = analyze_frame(frame, symbols) if frame is not None and len(frame) else []
+    rows = analyze_frame(frame, symbols, **settings) if frame is not None and len(frame) else []
     found = {row["symbol"] for row in rows}
     return rows, [s for s in symbols if s not in found]
 
@@ -114,7 +136,7 @@ def select(rows, sort="rsi", descending=False, signals_only=False, top=None):
     """Filter (only OVERSOLD/OVERBOUGHT), sort and cut to the first `top` rows."""
     if sort not in SORT_KEYS:
         raise ValueError(f"Unknown sort '{sort}'. Choose from: {', '.join(SORT_KEYS)}")
-    chosen = [r for r in rows if not signals_only or r["signal"] in ("OVERSOLD", "OVERBOUGHT")]
+    chosen = [r for r in rows if not signals_only or r["signal"] in SIGNALS]
     chosen = sorted(chosen, key=SORT_KEYS[sort], reverse=descending)
     return chosen[:top] if top else chosen
 
@@ -131,3 +153,16 @@ def write_csv(rows, path):
         writer = csv.DictWriter(handle, fieldnames=FIELDS)
         writer.writeheader()
         writer.writerows(rows)
+
+
+def write_json(rows, path):
+    with open(path, "w", encoding="utf-8") as handle:
+        json.dump(rows, handle, indent=2, ensure_ascii=False)
+
+
+def new_signals(previous_rows, rows):
+    """Rows that are OVERSOLD/OVERBOUGHT now but were not (with the same signal) before.
+
+    Used by watch mode and the Telegram alerts so the same signal is not repeated every scan."""
+    before = {r["symbol"]: r["signal"] for r in (previous_rows or [])}
+    return [r for r in rows if r["signal"] in SIGNALS and before.get(r["symbol"]) != r["signal"]]

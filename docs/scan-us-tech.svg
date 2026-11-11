@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="550" viewBox="0 0 720 550">
+<rect width="100%" height="100%" rx="10" fill="#0d1117" stroke="#30363d"/>
+<rect width="100%" height="32" rx="10" fill="#161b22"/><rect y="22" width="100%" height="10" fill="#161b22"/>
+<circle cx="18" cy="16" r="6" fill="#ff5f56"/><circle cx="38" cy="16" r="6" fill="#ffbd2e"/><circle cx="58" cy="16" r="6" fill="#27c93f"/>
+<text x="360" y="21" fill="#8b949e" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12" text-anchor="middle">Hugnin — live scan</text>
+<g font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="13" xml:space="preserve">
+<text x="14" y="56" fill="#58a6ff">$ python main.py --group us-tech --sort rsi</text>
+<text x="14" y="74" fill="#e6edf3">Scanning 20 symbols (us-tech) at 2026-11-11 21:39:43 ...</text>
+<text x="14" y="92" fill="#e6edf3">SYMBOL           PRICE   CHG %    RSI  SIGNAL     TREND          vs 52W HIGH  VOL x</text>
+<text x="14" y="110" fill="#8b949e">-----------------------------------------------------------------------------------</text>
+<text x="14" y="128" fill="#e6edf3">NOW             102.53   +2.93   30.7  LOW        DOWN/long-UP        -40.9%   0.41</text>
+<text x="14" y="146" fill="#e6edf3">NVDA            177.20   +4.92   31.8  LOW        DOWN/long-UP        -25.9%   1.21</text>
+<text x="14" y="164" fill="#e6edf3">INTC             63.19   +8.70   35.0  LOW        DOWN/long-UP        -55.2%   0.61</text>
+<text x="14" y="182" fill="#e6edf3">CRM             217.07   +1.68   38.5  LOW        DOWN/long-UP        -17.9%   0.42</text>
+<text x="14" y="200" fill="#e6edf3">GOOGL           295.19   +2.72   39.4  LOW        DOWN/long-DOWN      -26.6%   0.36</text>
+<text x="14" y="218" fill="#e6edf3">ADBE            237.27   +0.24   41.1  LOW        DOWN/long-DOWN      -33.6%   0.42</text>
+<text x="14" y="236" fill="#e6edf3">CSCO            102.02   +3.94   45.2  NEUTRAL    DOWN/long-UP        -20.9%   0.42</text>
+<text x="14" y="254" fill="#e6edf3">META            640.03   -0.21   46.1  NEUTRAL    DOWN/long-UP        -17.7%   0.36</text>
+<text x="14" y="272" fill="#e6edf3">MSFT            521.56   -2.18   47.8  NEUTRAL    UP/long-UP           -6.2%   0.62</text>
+<text x="14" y="290" fill="#e6edf3">AMAT            402.51   +8.05   49.2  NEUTRAL    DOWN/long-DOWN      -44.3%   0.38</text>
+<text x="14" y="308" fill="#e6edf3">ORCL            130.00  +10.19   50.6  NEUTRAL    DOWN/long-DOWN      -47.2%   0.58</text>
+<text x="14" y="326" fill="#e6edf3">INTU            338.82   -0.48   54.1  NEUTRAL    UP/long-DOWN        -49.2%   0.43</text>
+<text x="14" y="344" fill="#e6edf3">QCOM            180.83   +4.21   54.6  NEUTRAL    UP/long-UP          -27.3%   0.46</text>
+<text x="14" y="362" fill="#e6edf3">AMD             565.28   +9.72   55.1  HIGH       UP/long-UP          -13.0%   0.95</text>
+<text x="14" y="380" fill="#e6edf3">TSLA            393.70   +3.67   55.3  HIGH       UP/long-DOWN        -19.6%   0.43</text>
+<text x="14" y="398" fill="#e6edf3">AVGO            352.71   +6.24   56.1  HIGH       UP/long-DOWN        -26.5%   0.71</text>
+<text x="14" y="416" fill="#e6edf3">IBM             247.62   +1.27   56.2  HIGH       UP/long-DOWN        -23.7%   0.30</text>
+<text x="14" y="434" fill="#e6edf3">AMZN            266.80   -1.50   57.9  HIGH       UP/long-UP           -6.1%   0.44</text>
+<text x="14" y="452" fill="#e6edf3">AAPL            355.09   +1.89   60.1  HIGH       UP/long-UP            0.0%   0.35</text>
+<text x="14" y="470" fill="#e6edf3">TXN             313.86   +4.44   61.1  HIGH       UP/long-UP           -4.6%   0.35</text>
+<text x="14" y="488" fill="#e6edf3"></text>
+<text x="14" y="506" fill="#e6edf3">Scanned 20/20  |  oversold 0  overbought 0  neutral zone 20</text>
+<text x="14" y="524" fill="#e6edf3">Not investment advice. FA Software | Developer: Anıl</text>
+</g></svg>

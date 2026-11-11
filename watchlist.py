@@ -28,7 +28,7 @@ GROUPS = {
         "THYAO.IS", "ASELS.IS", "GARAN.IS", "EREGL.IS", "AKBNK.IS", "ISCTR.IS", "YKBNK.IS",
         "KCHOL.IS", "SAHOL.IS", "BIMAS.IS", "TUPRS.IS", "SISE.IS", "FROTO.IS", "TOASO.IS",
         "PGSUS.IS", "TCELL.IS", "TTKOM.IS", "ARCLK.IS", "KRDMD.IS", "PETKM.IS", "EKGYO.IS",
-        "HEKTS.IS", "KOZAL.IS", "ASTOR.IS", "SASA.IS",
+        "HEKTS.IS", "TRALT.IS", "ASTOR.IS", "SASA.IS",
     ],
     "crypto": ["BTC-USD", "ETH-USD", "SOL-USD", "XRP-USD", "BNB-USD"],
 }

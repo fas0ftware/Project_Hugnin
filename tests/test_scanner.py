@@ -166,8 +166,84 @@ def test_cli_table_contains_every_row():
         assert symbol in table
 
 
-if __name__ == "__main__":
-    for name, fn in list(globals().items()):
-        if name.startswith("test_"):
-            fn()
-            print("ok", name)
+
+# --- v3 -------------------------------------------------------------------------
+
+import json  # noqa: E402
+
+import pytest  # noqa: E402
+
+
+def test_parse_symbols():
+    assert scanner.parse_symbols("aapl, msft  btc-usd;THYAO.IS ^gspc aapl") == \
+        ["AAPL", "MSFT", "BTC-USD", "THYAO.IS", "^GSPC"]
+    for bad in ("", " , ", "AAPL;rm -rf /", "<b>", "A" * 30):
+        with pytest.raises(ValueError):
+            scanner.parse_symbols(bad)
+
+
+def test_custom_levels_change_the_signal():
+    assert scanner.classify(35) == "LOW"
+    assert scanner.classify(35, oversold=40, overbought=60) == "OVERSOLD"
+    assert scanner.classify(65, oversold=40, overbought=60) == "OVERBOUGHT"
+
+
+def test_rsi_period_is_passed_through():
+    close = choppy(60)
+    a = scanner.analyze_symbol("X", close, rsi_period=14)
+    b = scanner.analyze_symbol("X", close, rsi_period=5)
+    assert a["rsi"] != b["rsi"]
+    assert scanner.analyze_symbol("X", choppy(20), rsi_period=30) is None
+
+
+def test_new_signals_only_reports_changes():
+    prev = [{"symbol": "A", "signal": "OVERSOLD"}, {"symbol": "B", "signal": "NEUTRAL"},
+            {"symbol": "C", "signal": "OVERBOUGHT"}]
+    now = [{"symbol": "A", "signal": "OVERSOLD"}, {"symbol": "B", "signal": "OVERBOUGHT"},
+           {"symbol": "C", "signal": "OVERSOLD"}, {"symbol": "D", "signal": "LOW"},
+           {"symbol": "E", "signal": "OVERSOLD"}]
+    assert [r["symbol"] for r in scanner.new_signals(prev, now)] == ["B", "C", "E"]
+    assert [r["symbol"] for r in scanner.new_signals(None, now)] == ["A", "B", "C", "E"]
+
+
+def test_json_export(tmp_path):
+    path = tmp_path / "out.json"
+    scanner.write_json(sample_rows(), str(path))
+    assert json.loads(path.read_text(encoding="utf-8"))[0]["symbol"] == sample_rows()[0]["symbol"]
+
+
+def fake_downloader(symbols, period):
+    return make_frame({"UPP": rising(), "DWN": falling(), "MID": choppy()})
+
+
+def test_cli_end_to_end_with_fake_data(tmp_path, capsys):
+    out_csv, out_json = tmp_path / "r.csv", tmp_path / "r.json"
+    code = main.main(["--symbols", "UPP,DWN,MID,GONE", "--csv", str(out_csv), "--json", str(out_json),
+                      "--no-color"], downloader=fake_downloader)
+    text = capsys.readouterr().out
+    assert code == 0
+    assert "UPP" in text and "OVERBOUGHT" in text and "OVERSOLD" in text
+    assert "No data for 1: GONE" in text and "\033[" not in text
+    assert len(json.loads(out_json.read_text())) == 3 and out_csv.exists()
+
+
+def test_cli_validates_settings():
+    for bad in (["--rsi-period", "1"], ["--oversold", "80"], ["--oversold", "40", "--overbought", "40"],
+                ["--symbols", "bad symbol!"]):
+        with pytest.raises(SystemExit):
+            main.parse_args(bad)
+
+
+def test_watch_mode_prints_new_signals_once(capsys, monkeypatch):
+    calls = {"n": 0}
+
+    def sleeper(_):
+        calls["n"] += 1
+        if calls["n"] >= 2:
+            raise KeyboardInterrupt
+
+    monkeypatch.setattr(main.time, "sleep", sleeper)
+    assert main.main(["--symbols", "UPP,DWN", "--watch", "1", "--no-color"], downloader=fake_downloader) == 0
+    out = capsys.readouterr().out
+    assert out.count("No new signals since the last scan.") == 1  # second scan: nothing new
+    assert "Hugnin stopped." in out

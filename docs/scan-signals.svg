@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="622" viewBox="0 0 720 622">
+<rect width="100%" height="100%" rx="10" fill="#0d1117" stroke="#30363d"/>
+<rect width="100%" height="32" rx="10" fill="#161b22"/><rect y="22" width="100%" height="10" fill="#161b22"/>
+<circle cx="18" cy="16" r="6" fill="#ff5f56"/><circle cx="38" cy="16" r="6" fill="#ffbd2e"/><circle cx="58" cy="16" r="6" fill="#27c93f"/>
+<text x="360" y="21" fill="#8b949e" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12" text-anchor="middle">Hugnin — 109 symbols, signals only</text>
+<g font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="13" xml:space="preserve">
+<text x="14" y="56" fill="#58a6ff">$ python main.py --signals-only --oversold 35 --overbought 65</text>
+<text x="14" y="74" fill="#e6edf3">Scanning 109 symbols (all) at 2026-11-11 21:40:18 ...</text>
+<text x="14" y="92" fill="#e6edf3">SYMBOL           PRICE   CHG %    RSI  SIGNAL     TREND          vs 52W HIGH  VOL x</text>
+<text x="14" y="110" fill="#8b949e">-----------------------------------------------------------------------------------</text>
+<text x="14" y="128" fill="#3fb950">XRP-USD           1.06   +0.78   25.5  OVERSOLD   DOWN/long-UP        -32.3%   0.92</text>
+<text x="14" y="146" fill="#3fb950">SOL-USD          85.13   +2.25   29.5  OVERSOLD   DOWN/long-UP        -30.3%   0.77</text>
+<text x="14" y="164" fill="#3fb950">NOW             102.55   +2.95   30.7  OVERSOLD   DOWN/long-UP        -40.9%   0.41</text>
+<text x="14" y="182" fill="#3fb950">NVDA            177.19   +4.91   31.8  OVERSOLD   DOWN/long-UP        -25.9%   1.21</text>
+<text x="14" y="200" fill="#3fb950">ETH-USD        2085.21   +1.71   33.7  OVERSOLD   DOWN/long-UP        -24.9%   0.83</text>
+<text x="14" y="218" fill="#3fb950">ARCLK.IS         68.60   -2.76   34.6  OVERSOLD   DOWN/long-DOWN      -49.3%   1.00</text>
+<text x="14" y="236" fill="#3fb950">HEKTS.IS          1.67   -2.34   34.8  OVERSOLD   DOWN/long-DOWN      -65.4%   0.79</text>
+<text x="14" y="254" fill="#3fb950">INTC             63.19   +8.70   35.0  OVERSOLD   DOWN/long-UP        -55.2%   0.61</text>
+<text x="14" y="272" fill="#f85149">LIN             523.85   +0.40   65.2  OVERBOUGHT UP/long-DOWN         -3.9%   0.28</text>
+<text x="14" y="290" fill="#f85149">HD              349.92   -0.31   65.4  OVERBOUGHT UP/long-DOWN         -8.6%   0.30</text>
+<text x="14" y="308" fill="#f85149">BLK            1231.03   +0.73   65.6  OVERBOUGHT UP/long-UP            0.0%   0.25</text>
+<text x="14" y="326" fill="#f85149">CMCSA            24.75   +0.02   65.8  OVERBOUGHT UP/long-DOWN        -20.6%   0.24</text>
+<text x="14" y="344" fill="#f85149">MMM             190.21   +0.44   66.2  OVERBOUGHT UP/long-UP           -1.9%   0.20</text>
+<text x="14" y="362" fill="#f85149">UPS             112.31   +1.13   67.4  OVERBOUGHT UP/long-DOWN         -3.1%   0.27</text>
+<text x="14" y="380" fill="#f85149">KO               96.86   -0.05   67.7  OVERBOUGHT UP/long-UP           -0.1%   0.30</text>
+<text x="14" y="398" fill="#f85149">MCD             276.50   -2.01   67.8  OVERBOUGHT UP/long-DOWN        -17.3%   0.39</text>
+<text x="14" y="416" fill="#f85149">THYAO.IS        314.75   +0.32   69.3  OVERBOUGHT UP/long-DOWN         -9.6%   0.84</text>
+<text x="14" y="434" fill="#f85149">LLY            1430.58   -0.12   69.4  OVERBOUGHT UP/long-UP           -0.1%   0.27</text>
+<text x="14" y="452" fill="#f85149">DIS             119.25   +0.03   70.6  OVERBOUGHT UP/long-UP            0.0%   0.30</text>
+<text x="14" y="470" fill="#f85149">LOW             230.22   -0.71   70.6  OVERBOUGHT UP/long-DOWN        -18.5%   0.26</text>
+<text x="14" y="488" fill="#f85149">PGSUS.IS        154.80   +0.26   70.6  OVERBOUGHT UP/long-DOWN        -30.9%   1.66</text>
+<text x="14" y="506" fill="#f85149">COST           1075.41   +0.87   71.4  OVERBOUGHT UP/long-DOWN         -1.4%   0.48</text>
+<text x="14" y="524" fill="#f85149">GARAN.IS        154.80   -0.39   75.3  OVERBOUGHT UP/long-DOWN         -2.4%   0.98</text>
+<text x="14" y="542" fill="#f85149">BRK-B           582.30   -0.18   76.8  OVERBOUGHT UP/long-UP           -0.2%   0.36</text>
+<text x="14" y="560" fill="#e6edf3"></text>
+<text x="14" y="578" fill="#e6edf3">Scanned 109/109  |  oversold 8  overbought 16  neutral zone 85</text>
+<text x="14" y="596" fill="#e6edf3">Not investment advice. FA Software | Developer: Anıl</text>
+</g></svg>
